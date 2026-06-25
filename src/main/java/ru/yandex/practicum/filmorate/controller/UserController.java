@@ -28,6 +28,25 @@ public class UserController {
     public User createUser(@RequestBody User user) {
         log.info("Получен запрос на создание пользователя: {}", user.getLogin());
 
+        validateUser(user);
+        user.setId(getNextId());
+        users.put(user.getId(), user);
+        log.info("Пользователь успешно создан: ID {}", user.getId());
+        return user;
+    }
+
+    @PutMapping
+    public User update(@RequestBody User user) {
+        if (!users.containsKey(user.getId())) {
+            throw new NotFoundException("Пользователь с id " + user.getId() + " не найден");
+        }
+
+        validateUser(user);
+        users.put(user.getId(), user);
+        return user;
+    }
+
+    public void validateUser(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
             log.warn("Ошибка валидации: неверный email у пользователя {}", user.getLogin());
             throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
@@ -46,41 +65,7 @@ public class UserController {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        log.info("Пользователь успешно создан: ID {}", user.getId());
-        return user;
     }
-
-    @PutMapping
-    public User update(@RequestBody User newUser) {
-        if (!users.containsKey(newUser.getId())) {
-            throw new NotFoundException("Пользователь с id " + newUser.getId() + " не найден");
-        }
-        if (newUser.getEmail() == null || newUser.getEmail().isBlank() || !newUser.getEmail().contains("@")) {
-            log.warn("Ошибка валидации: неверный email у пользователя {}", newUser.getLogin());
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-
-        if (newUser.getLogin() == null || newUser.getLogin().isBlank() || newUser.getLogin().contains(" ")) {
-            log.warn("Ошибка валидации: логин пустой или содержит пробелы {}", newUser.getLogin());
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        }
-
-        if (newUser.getBirthday() == null || newUser.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Ошибка валидации: пользователь {} неверно указал дату рождения {}", newUser.getLogin(), newUser.getBirthday());
-            throw new ValidationException("Укажите верную дату рождения");
-        }
-        if (newUser.getName() == null || newUser.getName().isBlank()) {
-            newUser.setName(newUser.getLogin());
-        }
-
-        users.put(newUser.getId(), newUser);
-        return newUser;
-
-    }
-
 
     private long getNextId() {
         long currentMaxId = users.keySet()
