@@ -1,54 +1,57 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
 
-    private final Map<Long, Film> films = new HashMap<>();
+    private final FilmStorage filmStorage;
+    private final FilmService filmService;
 
     @GetMapping
     public Collection<Film> findAll() {
-        return films.values();
+        return filmStorage.findAll();
     }
 
     @PostMapping
     public Film create(@RequestBody Film film) {
-        log.info("Получен запрос на создание фильма {}", film.getName());
         validateFilm(film);
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        return film;
+        return filmStorage.create(film);
     }
 
     @PutMapping
     public Film update(@RequestBody Film film) {
-        if (film.getId() == null) {
-            log.warn("Ошибка: не указан ID фильма");
-            throw new ValidationException("Id должен быть указан");
-        }
-
-        if (!films.containsKey(film.getId())) {
-            log.warn("Ошибка: фильм с ID {} не найден", film.getId());
-            throw new NotFoundException("Фильм с id " + film.getId() + " не найден");
-        }
-
         validateFilm(film);
-        films.put(film.getId(), film);
-        log.info("Фильм с ID {} успешно обновлен", film.getId());
-        return film;
+        return filmStorage.update(film);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count) {
+        return filmService.getTopFilms(count);
+    }
+
+    @PutMapping("{id}/like/{userId}")
+    public void addLikeFilm(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.addLikeFilm(id, userId);
+    }
+
+    @DeleteMapping("{id}/like/{userId}")
+    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
+        filmService.removeLike(id, userId);
     }
 
     public void validateFilm(Film film) {
@@ -71,15 +74,6 @@ public class FilmController {
             log.warn("Ошибка валидации: указана продолжительность фильма меньше 0 - {}", film.getDuration());
             throw new ValidationException("Продолжительность фильма должна быть положительной");
         }
-    }
-
-    private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
     }
 
 }
