@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,11 +16,23 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserStorage userStorage;
 
+    public Collection<User> findAll() {
+        return userStorage.findAll();
+    }
+
+    public User create(@RequestBody User user) {
+        return userStorage.create(user);
+    }
+
     public User getUser(Long id) {
         return userStorage.findAll().stream()
                 .filter(user -> user.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+    }
+
+    public User update(@RequestBody User user) {
+        return userStorage.update(user);
     }
 
     public Set<User> getFriends(Long userId) {

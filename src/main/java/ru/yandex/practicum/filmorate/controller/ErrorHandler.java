@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ParameterNotValidException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 
 
@@ -15,7 +16,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handlerParameterNotValidException(final ValidationException e) {
+    public Map<String, String> handlerValidationException(final ValidationException e) {
         return Map.of(
                 "error", "Некорректное значение параметра " + e.getMessage(),
                 "reason", e.getMessage()
@@ -38,4 +39,14 @@ public class ErrorHandler {
                 "details", e.getMessage()
         );
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handlerParameterNotValidException(final ParameterNotValidException e) {
+        return Map.of(
+                "error", "Некорректное значение параметра " + e.getReason(),
+                "reason", e.getReason()
+        );
+    }
+
 }
