@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -20,7 +19,7 @@ public class UserService {
         return userStorage.findAll();
     }
 
-    public User create(@RequestBody User user) {
+    public User create(User user) {
         return userStorage.create(user);
     }
 
@@ -31,7 +30,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
     }
 
-    public User update(@RequestBody User user) {
+    public User update(User user) {
         return userStorage.update(user);
     }
 

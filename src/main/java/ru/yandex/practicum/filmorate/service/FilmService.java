@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -23,11 +22,11 @@ public class FilmService {
         return filmStorage.findAll();
     }
 
-    public Film create(@RequestBody Film film) {
+    public Film create(Film film) {
         return filmStorage.create(film);
     }
 
-    public Film update(@RequestBody Film film) {
+    public Film update(Film film) {
         return filmStorage.update(film);
     }
 
