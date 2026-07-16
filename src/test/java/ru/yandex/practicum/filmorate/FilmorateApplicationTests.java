@@ -8,6 +8,12 @@ import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 
@@ -22,8 +28,15 @@ class FilmorateApplicationTests {
 
     @BeforeEach
     void setUp() {
-        filmController = new FilmController();
-        userController = new UserController();
+
+        FilmStorage storageFilm = new InMemoryFilmStorage();
+        UserStorage storageUser = new InMemoryUserStorage();
+
+        UserService serviceUser = new UserService(storageUser);
+        FilmService serviceFilm = new FilmService(storageFilm, serviceUser);
+
+        filmController = new FilmController(serviceFilm);
+        userController = new UserController(serviceUser);
     }
 
     @Test
@@ -73,11 +86,11 @@ class FilmorateApplicationTests {
         user.setEmail("valid@email.com");
         user.setBirthday(LocalDate.of(1998, 2, 7));
 
-        User newUser = userController.createUser(user);
+        User newUser = userController.create(user);
 
         assertNotNull(newUser.getId(), "ID пользователя не должен быть null");
         assertEquals("login", newUser.getLogin(), "Логин должен совпадать");
-        assertEquals(1, userController.listUsers().size(), "В списке пользователей должен быть 1 элемент");
+        assertEquals(1, userController.findAll().size(), "В списке пользователей должен быть 1 элемент");
 
     }
 
@@ -88,7 +101,7 @@ class FilmorateApplicationTests {
         user.setEmail("invalid-email-without-at");
         user.setBirthday(LocalDate.of(1998, 2, 7));
 
-        assertThrows(ValidationException.class, () -> userController.createUser(user));
+        assertThrows(ValidationException.class, () -> userController.create(user));
     }
 
     @Test
@@ -98,7 +111,7 @@ class FilmorateApplicationTests {
         user.setEmail("valid@email.com");
         user.setBirthday(LocalDate.of(1998, 2, 7));
 
-        assertThrows(ValidationException.class, () -> userController.createUser(user));
+        assertThrows(ValidationException.class, () -> userController.create(user));
 
     }
 
@@ -109,7 +122,7 @@ class FilmorateApplicationTests {
         user.setEmail("valid-email-@without-at");
         user.setBirthday(LocalDate.of(2098, 2, 7));
 
-        assertThrows(ValidationException.class, () -> userController.createUser(user));
+        assertThrows(ValidationException.class, () -> userController.create(user));
     }
 
     @Test
@@ -131,7 +144,7 @@ class FilmorateApplicationTests {
         user.setEmail("valid@email.com");
         user.setBirthday(LocalDate.of(1998, 2, 7));
 
-        User newUser = userController.createUser(user);
+        User newUser = userController.create(user);
 
         newUser.setLogin("newLogin");
         newUser.setEmail("new@mail.com");
@@ -169,7 +182,7 @@ class FilmorateApplicationTests {
         user.setEmail("valid@email.com");
         user.setBirthday(LocalDate.of(1998, 2, 7));
 
-        assertThrows(ValidationException.class, () -> userController.createUser(user));
+        assertThrows(ValidationException.class, () -> userController.create(user));
     }
 
     @Test
@@ -179,7 +192,7 @@ class FilmorateApplicationTests {
         user.setEmail("valid@email.com");
         user.setBirthday(LocalDate.of(1998, 2, 7));
 
-        assertThrows(ValidationException.class, () -> userController.createUser(user));
+        assertThrows(ValidationException.class, () -> userController.create(user));
     }
 
     @Test
