@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.dal.dao;
+package ru.yandex.practicum.filmorate.dal.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -51,6 +52,12 @@ public class FilmController {
     @DeleteMapping("{id}/like/{userId}")
     public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
         filmService.removeLike(id, userId);
+    }
+
+    @GetMapping("/{id}")
+    public Film findById(@PathVariable Long id) {
+        return filmService.findById(id)
+                .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
     }
 
     public void validateFilm(Film film) {

@@ -1,16 +1,11 @@
-package ru.yandex.practicum.filmorate.dal.dao;
+package ru.yandex.practicum.filmorate.dal.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
-import java.time.LocalDate;
-
 @Data
-public class UserDto {
+public class GenreDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
-    private String email;
-    private String login;
     private String name;
-    private LocalDate birthday;
 }

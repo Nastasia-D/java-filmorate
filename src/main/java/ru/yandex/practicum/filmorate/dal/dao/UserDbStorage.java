@@ -82,7 +82,7 @@ public class UserDbStorage implements UserStorage {
         String sql = "SELECT u.* " +
                 "FROM users AS u " +
                 "INNER JOIN friends AS f ON u.id = f.friend_id " +
-                "WHERE f.user_id = ? AND f.is_confirmed = true";
+                "WHERE f.user_id = ?";
         List<User> list = jdbcTemplate.query(sql, userRowMapper, userId);
         return new HashSet<>(list);
     }
