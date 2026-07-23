@@ -27,7 +27,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findAll() {
-        String sql = "SELECT * " +
+        String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
                 "FROM films AS f " +
                 "INNER JOIN mpa AS m ON f.mpa_id = m.id ";
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
@@ -72,10 +72,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getTopFilms(Integer count) {
-        String sql = "SELECT f.* " +
+        String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
                 "FROM films AS f " +
+                "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
                 "LEFT JOIN likes AS l ON f.id = l.film_id " +
-                "GROUP BY f.id " +
+                "GROUP BY f.id, m.id, m.name " +
                 "ORDER BY COUNT(l.user_id) DESC " +
                 "LIMIT ?";
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
@@ -102,9 +103,10 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<Film> findById(Long id) {
-        String sql = "SELECT * " +
-                "FROM films " +
-                "WHERE id = ?";
+        String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
+                "FROM films As f " +
+                "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
+                "WHERE f.id = ?";
         List<Film> filmList = jdbcTemplate.query(sql, filmRowMapper, id);
 
         if (filmList.isEmpty()) {
@@ -113,7 +115,6 @@ public class FilmDbStorage implements FilmStorage {
 
         Film film = filmList.get(0);
         film.setGenres(new LinkedHashSet<>(getGenresForFilm(id)));
-        film.setMpa(getMpaForFilm(id));
         return Optional.of(film);
     }
 
