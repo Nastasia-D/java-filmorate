@@ -20,4 +20,8 @@ public interface FilmStorage {
     void removeLike(Long filmId, Long userId);
 
     List<Film> getTopFilms(Integer count);
+
+    Optional<Long> getSimilarUserId(Long userId);
+
+    List<Film> getRecommendations(Long userId, Long similarUserId);
 }
