@@ -28,6 +28,7 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmRowMapper filmRowMapper;
     private final DirectorRowMapper directorRowMapper;
 
+
     @Override
     public Collection<Film> findAll() {
         String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
