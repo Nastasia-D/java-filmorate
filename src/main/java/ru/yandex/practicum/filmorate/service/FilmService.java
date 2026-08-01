@@ -75,7 +75,7 @@ public class FilmService {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             for (Genre genre : film.getGenres()) {
                 genreStorage.findById(genre.getId())
-                        .orElseThrow(() -> new NotFoundException("Жанр с id " + genre.getId()  + " не найден")); // ошибка CRTL-V(С)  было вот так "film.getMpa().getId()"
+                        .orElseThrow(() -> new NotFoundException("Жанр с id " + genre.getId() + " не найден")); // ошибка CRTL-V(С)  было вот так "film.getMpa().getId()"
             }
         }
         // Валидация режиссеров
@@ -86,6 +86,7 @@ public class FilmService {
             }
         }
     }
+
     // НОВЫЙ МЕТОД
     public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
         directorStorage.findById(directorId)

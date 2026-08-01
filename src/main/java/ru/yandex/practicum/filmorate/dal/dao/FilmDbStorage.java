@@ -157,11 +157,11 @@ public class FilmDbStorage implements FilmStorage {
         Set<Genre> uniqueGenres = new HashSet<>(film.getGenres());
         String sqlGenres = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
 
-                jdbcTemplate.batchUpdate(sqlGenres, uniqueGenres, uniqueGenres.size(), (ps, genre) -> {
-                    ps.setLong(1, film.getId());
-                    ps.setLong(2, genre.getId());
-                });
-            }
+        jdbcTemplate.batchUpdate(sqlGenres, uniqueGenres, uniqueGenres.size(), (ps, genre) -> {
+            ps.setLong(1, film.getId());
+            ps.setLong(2, genre.getId());
+        });
+    }
 
     // Новый метод для получения режиссёров фильма
     private List<Director> getDirectorsForFilm(Long filmId) {
