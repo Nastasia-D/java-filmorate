@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.dal.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
@@ -21,4 +22,5 @@ public class FilmDto {
     private final Set<Long> likes = new HashSet<>();
     private Set<Genre> genres = new HashSet<>();
     private Mpa mpa;
+    private Set<Director> directors = new HashSet<>(); // строка с режиссерами
 }
