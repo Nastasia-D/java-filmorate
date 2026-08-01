@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.dal.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -25,8 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -324,7 +321,7 @@ public class DbStorageTest {
 
         filmStorage.addLikeFilm(createFilm.getId(), createUser.getId());
 
-        List<Film> topFilms = filmStorage.getTopFilms(1, null, null);
+        List<Film> topFilms = filmStorage.getTopFilms(1);
         assertThat(topFilms).hasSize(1);
         assertThat(topFilms.get(0).getId()).isEqualTo(createFilm.getId());
     }
@@ -353,7 +350,7 @@ public class DbStorageTest {
 
         filmStorage.removeLike(createFilm.getId(), createUser.getId());
 
-        List<Film> topFilms = filmStorage.getTopFilms(1, null, null);
+        List<Film> topFilms = filmStorage.getTopFilms(1);
         assertThat(topFilms).hasSize(1);
         assertThat(topFilms.get(0).getId()).isEqualTo(createFilm.getId());
     }
@@ -400,7 +397,7 @@ public class DbStorageTest {
         filmStorage.addLikeFilm(createFilm1.getId(), createUser1.getId());
         filmStorage.addLikeFilm(createFilm2.getId(), createUser2.getId());
         filmStorage.addLikeFilm(createFilm1.getId(), createUser2.getId());
-        List<Film> topFilms = filmStorage.getTopFilms(10, null, null);
+        List<Film> topFilms = filmStorage.getTopFilms(10);
 
         assertThat(topFilms).hasSize(2);
         assertThat(topFilms.get(0).getId()).isEqualTo(film1.getId());
@@ -431,200 +428,4 @@ public class DbStorageTest {
         Set<User> friends = userStorage.getFriends(user1.getId());
         assertThat(friends).isEmpty();
     }
-
-    @Test
-    public void testFindFilmGetTopFilmsByGenreAndYear() {
-        Genre genre1 = new Genre();
-        genre1.setId(1L);
-
-        Genre genre2 = new Genre();
-        genre2.setId(2L);
-
-        Mpa mpa = new Mpa();
-        mpa.setId(1L);
-
-        User user1 = new User();
-        user1.setLogin("login1");
-        user1.setEmail("valid1@email.com");
-        user1.setName("name1");
-        user1.setBirthday(LocalDate.of(1998, 2, 7));
-
-        User createUser1 = userStorage.create(user1);
-
-        User user2 = new User();
-        user2.setLogin("login2");
-        user2.setEmail("valid2@email.com");
-        user2.setName("name2");
-        user2.setBirthday(LocalDate.of(1998, 2, 7));
-
-        User createUser2 = userStorage.create(user2);
-
-        Film film1 = new Film();
-        film1.setName("name1");
-        film1.setDescription("description1");
-        film1.setReleaseDate(LocalDate.of(1998, 2, 7));
-        film1.setDuration(120);
-        film1.setMpa(mpa);
-        film1.setGenres(Set.of(genre1));
-
-        Film createFilm1 = filmStorage.create(film1);
-
-        Film film2 = new Film();
-        film2.setName("name2");
-        film2.setDescription("description2");
-        film2.setReleaseDate(LocalDate.of(1998, 2, 7));
-        film2.setDuration(120);
-        film2.setMpa(mpa);
-        film2.setGenres(Set.of(genre2));
-
-        Film createFilm2 = filmStorage.create(film2);
-
-        filmStorage.addLikeFilm(createFilm1.getId(), createUser1.getId());
-        filmStorage.addLikeFilm(createFilm2.getId(), createUser2.getId());
-        filmStorage.addLikeFilm(createFilm1.getId(), createUser2.getId());
-        List<Film> topFilms = filmStorage.getTopFilms(10, 1L, 1998);
-
-        assertThat(topFilms).hasSize(1);
-        assertThat(topFilms.get(0).getId()).isEqualTo(createFilm1.getId());
-    }
-
-    @Test
-    public void testGetRecommendations() {
-        Mpa mpa = new Mpa();
-        mpa.setId(1L);
-
-        User user1 = new User();
-        user1.setLogin("login1");
-        user1.setEmail("valid1@email.com");
-        user1.setName("name1");
-        user1.setBirthday(LocalDate.of(1998, 2, 7));
-
-        User createUser1 = userStorage.create(user1);
-
-        User user2 = new User();
-        user2.setLogin("login2");
-        user2.setEmail("valid2@email.com");
-        user2.setName("name2");
-        user2.setBirthday(LocalDate.of(1998, 2, 7));
-
-        User createUser2 = userStorage.create(user2);
-
-        User user3 = new User();
-        user3.setLogin("login3");
-        user3.setEmail("valid3@email.com");
-        user3.setName("name3");
-        user3.setBirthday(LocalDate.of(1998, 2, 7));
-
-        User createUser3 = userStorage.create(user3);
-
-        Film film1 = new Film();
-        film1.setName("name1");
-        film1.setDescription("description1");
-        film1.setReleaseDate(LocalDate.of(1998, 2, 7));
-        film1.setDuration(120);
-        film1.setMpa(mpa);
-
-        Film createFilm1 = filmStorage.create(film1);
-
-        Film film2 = new Film();
-        film2.setName("name2");
-        film2.setDescription("description2");
-        film2.setReleaseDate(LocalDate.of(1998, 2, 7));
-        film2.setDuration(120);
-        film2.setMpa(mpa);
-
-        Film createFilm2 = filmStorage.create(film2);
-
-        Film film3 = new Film();
-        film3.setName("name3");
-        film3.setDescription("description3");
-        film3.setReleaseDate(LocalDate.of(1998, 2, 7));
-        film3.setDuration(120);
-        film3.setMpa(mpa);
-
-        Film createFilm3 = filmStorage.create(film3);
-
-        filmStorage.addLikeFilm(createFilm1.getId(), createUser1.getId());
-        filmStorage.addLikeFilm(createFilm1.getId(), createUser2.getId());
-        filmStorage.addLikeFilm(createFilm2.getId(), createUser2.getId());
-        filmStorage.addLikeFilm(createFilm3.getId(), createUser3.getId());
-
-        Optional<Long> similarUserId = filmStorage.getSimilarUserId(createUser1.getId());
-        assertThat(similarUserId).isPresent();
-        assertThat(similarUserId.get()).isEqualTo(createUser2.getId());
-
-        List<Film> recommendations = filmStorage.getRecommendations(createUser1.getId(), similarUserId.get());
-
-        assertThat(recommendations).isNotNull().hasSize(1);
-        assertThat(recommendations.get(0).getId()).isEqualTo(createFilm2.getId());
-
-    }
-
-    @Test
-    void testGetRecommendationsNull() {
-        User user = new User();
-        user.setLogin("login");
-        user.setEmail("valid@email.com");
-        user.setName("name");
-        user.setBirthday(LocalDate.of(1998, 2, 7));
-
-        User createUser = userStorage.create(user);
-
-        Optional<Long> similarUserId = filmStorage.getSimilarUserId(createUser.getId());
-
-        assertThat(similarUserId).isEmpty();
-    }
-
-    @Test
-    public void testGetCommonFilms() {
-        Mpa mpa = new Mpa();
-        mpa.setId(1L);
-
-        User user1 = new User();
-        user1.setLogin("login1");
-        user1.setEmail("valid1@email.com");
-        user1.setName("name1");
-        user1.setBirthday(LocalDate.of(1998, 2, 7));
-
-        User createUser1 = userStorage.create(user1);
-
-        User user2 = new User();
-        user2.setLogin("login2");
-        user2.setEmail("valid2@email.com");
-        user2.setName("name2");
-        user2.setBirthday(LocalDate.of(1998, 2, 7));
-
-        User createUser2 = userStorage.create(user2);
-
-        userStorage.addFriend(user1.getId(), user2.getId());
-        userStorage.addFriend(user2.getId(), user1.getId());
-
-        Film film1 = new Film();
-        film1.setName("name1");
-        film1.setDescription("description1");
-        film1.setReleaseDate(LocalDate.of(1998, 2, 7));
-        film1.setDuration(120);
-        film1.setMpa(mpa);
-
-        Film createFilm1 = filmStorage.create(film1);
-
-        Film film2 = new Film();
-        film2.setName("name2");
-        film2.setDescription("description2");
-        film2.setReleaseDate(LocalDate.of(1998, 2, 7));
-        film2.setDuration(120);
-        film2.setMpa(mpa);
-
-        Film createFilm2 = filmStorage.create(film2);
-
-        filmStorage.addLikeFilm(createFilm1.getId(), createUser1.getId());
-        filmStorage.addLikeFilm(createFilm2.getId(), createUser2.getId());
-        filmStorage.addLikeFilm(createFilm1.getId(), createUser2.getId());
-
-        List<Film> commonFilms = filmStorage.getCommonFilms(createUser1.getId(), createUser2.getId());
-        assertNotNull(commonFilms, "Список общих фильмов не должен быть null");
-        assertEquals(1, commonFilms.size(), "Должен быть ровно один общий фильм");
-        assertEquals(createFilm1.getId(), commonFilms.get(0).getId(), "Общим должен быть именно film1");
-    }
-
 }
