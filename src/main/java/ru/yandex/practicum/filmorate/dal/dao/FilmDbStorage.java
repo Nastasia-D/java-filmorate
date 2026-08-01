@@ -71,36 +71,15 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
-        StringBuilder sql = new StringBuilder("SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
+    public List<Film> getTopFilms(Integer count) {
+        String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
                 "FROM films AS f " +
                 "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
-                "LEFT JOIN likes AS l ON f.id = l.film_id ");
-
-        List<Object> params = new ArrayList<>();
-
-        if (genreId != null) {
-            sql.append("LEFT JOIN film_genres AS fg ON f.id = fg.film_id ");
-        }
-
-        if (year != null && genreId != null) {
-            sql.append("WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ");
-            params.add(genreId);
-            params.add(year);
-        } else if (genreId != null) {
-            sql.append("WHERE fg.genre_id = ? ");
-            params.add(genreId);
-        } else if (year != null) {
-            sql.append("WHERE EXTRACT(YEAR FROM f.release_date) = ? ");
-            params.add(year);
-        }
-
-        sql.append("GROUP BY f.id, m.id, m.name " +
+                "LEFT JOIN likes AS l ON f.id = l.film_id " +
+                "GROUP BY f.id, m.id, m.name " +
                 "ORDER BY COUNT(l.user_id) DESC " +
-                "LIMIT ?");
-        params.add(count);
-
-        List<Film> films = jdbcTemplate.query(sql.toString(), filmRowMapper, params.toArray());
+                "LIMIT ?";
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
         for (Film film : films) {
             film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
             film.setMpa(getMpaForFilm(film.getId()));
@@ -170,66 +149,9 @@ public class FilmDbStorage implements FilmStorage {
         Set<Genre> uniqueGenres = new HashSet<>(film.getGenres());
         String sqlGenres = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
 
-        jdbcTemplate.batchUpdate(sqlGenres, uniqueGenres, uniqueGenres.size(), (ps, genre) -> {
-            ps.setLong(1, film.getId());
-            ps.setLong(2, genre.getId());
-        });
-    }
-
-    private Set<Long> getLikedFilmIds(Long userId) {
-        String sql = "SELECT film_id " +
-                "FROM likes " +
-                "WHERE user_id = ?";
-        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, userId));
-    }
-
-    @Override
-    public Optional<Long> getSimilarUserId(Long userId) {
-        String sql = "SELECT l2.user_id " +
-                "FROM likes AS l1 " +
-                "INNER JOIN likes AS l2 ON l1.film_id = l2.film_id AND l1.user_id != l2.user_id " +
-                "WHERE l1.user_id = ? " +
-                "GROUP BY l2.user_id " +
-                "ORDER BY COUNT(l2.film_id) DESC " +
-                "LIMIT 1";
-        List<Long> similarUserId = jdbcTemplate.query(sql, (rs, rowNum) ->
-                        rs.getLong("user_id"),
-                userId);
-        return similarUserId.stream().findFirst();
-    }
-
-    @Override
-    public List<Film> getRecommendations(Long userId, Long similarUserId) {
-        String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
-                "FROM films As f " +
-                "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
-                "INNER JOIN likes AS l ON f.id = l.film_id " +
-                "WHERE l.user_id = ? AND f.id NOT IN (SELECT film_id " +
-                "FROM likes " +
-                "WHERE user_id = ?) ";
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, similarUserId, userId);
-        for (Film film : films) {
-            film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
-            film.setMpa(getMpaForFilm(film.getId()));
-        }
-        return films;
-    }
-
-    public List<Film> getCommonFilms(Long userId, Long friendId) {
-        String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
-                "FROM films AS f " +
-                "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
-                "INNER JOIN likes AS l1 ON f.id = l1.film_id AND l1.user_id = ? " +
-                "INNER JOIN likes AS l2 ON f.id = l2.film_id AND l2.user_id = ? " +
-                "LEFT JOIN likes AS l3 ON f.id = l3.film_id " +
-                "GROUP BY f.id " +
-                "ORDER BY COUNT(l3.user_id) DESC";
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
-        for (Film film : films) {
-            film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
-            film.setMpa(getMpaForFilm(film.getId()));
-        }
-        return films;
-    }
-
+                jdbcTemplate.batchUpdate(sqlGenres, uniqueGenres, uniqueGenres.size(), (ps, genre) -> {
+                    ps.setLong(1, film.getId());
+                    ps.setLong(2, genre.getId());
+                });
+            }
 }
