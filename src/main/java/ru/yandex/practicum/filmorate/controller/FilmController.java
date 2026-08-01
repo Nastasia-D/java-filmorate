@@ -81,7 +81,8 @@ public class FilmController {
             throw new ValidationException("Продолжительность фильма должна быть положительной");
         }
     }
-        // Новый метод
+
+    // Новый метод
     @GetMapping("/director/{directorId}")
     public List<Film> getFilmsByDirector(
             @PathVariable Long directorId,
