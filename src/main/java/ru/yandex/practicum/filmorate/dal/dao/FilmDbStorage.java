@@ -71,15 +71,36 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getTopFilms(Integer count) {
-        String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
+    public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
+        StringBuilder sql = new StringBuilder("SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
                 "FROM films AS f " +
                 "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
-                "LEFT JOIN likes AS l ON f.id = l.film_id " +
-                "GROUP BY f.id, m.id, m.name " +
+                "LEFT JOIN likes AS l ON f.id = l.film_id ");
+
+        List<Object> params = new ArrayList<>();
+
+        if (genreId != null) {
+            sql.append("LEFT JOIN film_genres AS fg ON f.id = fg.film_id ");
+        }
+
+        if (year != null && genreId != null) {
+            sql.append("WHERE fg.genre_id = ? AND EXTRACT(YEAR FROM f.release_date) = ? ");
+            params.add(genreId);
+            params.add(year);
+        } else if (genreId != null) {
+            sql.append("WHERE fg.genre_id = ? ");
+            params.add(genreId);
+        } else if (year != null) {
+            sql.append("WHERE EXTRACT(YEAR FROM f.release_date) = ? ");
+            params.add(year);
+        }
+
+        sql.append("GROUP BY f.id, m.id, m.name " +
                 "ORDER BY COUNT(l.user_id) DESC " +
-                "LIMIT ?";
-        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, count);
+                "LIMIT ?");
+        params.add(count);
+
+        List<Film> films = jdbcTemplate.query(sql.toString(), filmRowMapper, params.toArray());
         for (Film film : films) {
             film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
             film.setMpa(getMpaForFilm(film.getId()));
@@ -149,9 +170,9 @@ public class FilmDbStorage implements FilmStorage {
         Set<Genre> uniqueGenres = new HashSet<>(film.getGenres());
         String sqlGenres = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
 
-                jdbcTemplate.batchUpdate(sqlGenres, uniqueGenres, uniqueGenres.size(), (ps, genre) -> {
-                    ps.setLong(1, film.getId());
-                    ps.setLong(2, genre.getId());
-                });
-            }
+        jdbcTemplate.batchUpdate(sqlGenres, uniqueGenres, uniqueGenres.size(), (ps, genre) -> {
+            ps.setLong(1, film.getId());
+            ps.setLong(2, genre.getId());
+        });
+    }
 }
