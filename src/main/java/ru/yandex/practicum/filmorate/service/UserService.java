@@ -28,6 +28,13 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден"));
     }
 
+    public void delete(Long userId) {
+        getUser(userId);
+        userStorage.delete(userId);
+    }
+
+
+
     public User update(User user) {
         return userStorage.update(user);
     }

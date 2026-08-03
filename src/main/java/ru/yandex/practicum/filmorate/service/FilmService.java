@@ -22,6 +22,13 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
 
+    public void delete(Long filmId) {
+        getFilm(filmId);
+        filmStorage.delete(filmId);
+    }
+
+
+
     public Collection<Film> findAll() {
         return filmStorage.findAll();
     }

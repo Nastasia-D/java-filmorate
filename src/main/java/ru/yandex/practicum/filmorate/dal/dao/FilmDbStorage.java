@@ -26,6 +26,27 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmRowMapper filmRowMapper;
 
     @Override
+    public void delete(Long filmId) {
+
+        jdbcTemplate.update(
+                "DELETE FROM likes WHERE film_id = ?",
+                filmId
+        );
+
+        jdbcTemplate.update(
+                "DELETE FROM film_genres WHERE film_id = ?",
+                filmId
+        );
+
+        jdbcTemplate.update(
+                "DELETE FROM films WHERE id = ?",
+                filmId
+        );
+    }
+
+
+
+    @Override
     public Collection<Film> findAll() {
         String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
                 "FROM films AS f " +
