@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
@@ -26,8 +25,7 @@ public class DirectorController {
     @GetMapping("/{id}")
     public Director findById(@PathVariable Long id) {
         log.info("Запрос на получение режиссёра с id: {}", id);
-        return directorService.findById(id)
-                .orElseThrow(() -> new NotFoundException("Режиссёр с id " + id + " не найден"));
+        return directorService.findById(id);
     }
 
     @PostMapping
