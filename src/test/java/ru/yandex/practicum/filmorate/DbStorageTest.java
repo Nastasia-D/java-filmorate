@@ -485,4 +485,91 @@ public class DbStorageTest {
         assertThat(topFilms).hasSize(1);
         assertThat(topFilms.get(0).getId()).isEqualTo(createFilm1.getId());
     }
+
+    @Test
+    public void testGetRecommendations() {
+        Mpa mpa = new Mpa();
+        mpa.setId(1L);
+
+        User user1 = new User();
+        user1.setLogin("login1");
+        user1.setEmail("valid1@email.com");
+        user1.setName("name1");
+        user1.setBirthday(LocalDate.of(1998, 2, 7));
+
+        User createUser1 = userStorage.create(user1);
+
+        User user2 = new User();
+        user2.setLogin("login2");
+        user2.setEmail("valid2@email.com");
+        user2.setName("name2");
+        user2.setBirthday(LocalDate.of(1998, 2, 7));
+
+        User createUser2 = userStorage.create(user2);
+
+        User user3 = new User();
+        user3.setLogin("login3");
+        user3.setEmail("valid3@email.com");
+        user3.setName("name3");
+        user3.setBirthday(LocalDate.of(1998, 2, 7));
+
+        User createUser3 = userStorage.create(user3);
+
+        Film film1 = new Film();
+        film1.setName("name1");
+        film1.setDescription("description1");
+        film1.setReleaseDate(LocalDate.of(1998, 2, 7));
+        film1.setDuration(120);
+        film1.setMpa(mpa);
+
+        Film createFilm1 = filmStorage.create(film1);
+
+        Film film2 = new Film();
+        film2.setName("name2");
+        film2.setDescription("description2");
+        film2.setReleaseDate(LocalDate.of(1998, 2, 7));
+        film2.setDuration(120);
+        film2.setMpa(mpa);
+
+        Film createFilm2 = filmStorage.create(film2);
+
+        Film film3 = new Film();
+        film3.setName("name3");
+        film3.setDescription("description3");
+        film3.setReleaseDate(LocalDate.of(1998, 2, 7));
+        film3.setDuration(120);
+        film3.setMpa(mpa);
+
+        Film createFilm3 = filmStorage.create(film3);
+
+        filmStorage.addLikeFilm(createFilm1.getId(), createUser1.getId());
+        filmStorage.addLikeFilm(createFilm1.getId(), createUser2.getId());
+        filmStorage.addLikeFilm(createFilm2.getId(), createUser2.getId());
+        filmStorage.addLikeFilm(createFilm3.getId(), createUser3.getId());
+
+        Optional<Long> similarUserId = filmStorage.getSimilarUserId(createUser1.getId());
+        assertThat(similarUserId).isPresent();
+        assertThat(similarUserId.get()).isEqualTo(createUser2.getId());
+
+        List<Film> recommendations = filmStorage.getRecommendations(createUser1.getId(), similarUserId.get());
+
+        assertThat(recommendations).isNotNull().hasSize(1);
+        assertThat(recommendations.get(0).getId()).isEqualTo(createFilm2.getId());
+
+    }
+
+    @Test
+    void testGetRecommendationsNull() {
+        User user = new User();
+        user.setLogin("login");
+        user.setEmail("valid@email.com");
+        user.setName("name");
+        user.setBirthday(LocalDate.of(1998, 2, 7));
+
+        User createUser = userStorage.create(user);
+
+        Optional<Long> similarUserId = filmStorage.getSimilarUserId(createUser.getId());
+
+        assertThat(similarUserId).isEmpty();
+    }
 }

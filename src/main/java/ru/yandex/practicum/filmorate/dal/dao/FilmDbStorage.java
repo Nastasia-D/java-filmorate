@@ -175,4 +175,43 @@ public class FilmDbStorage implements FilmStorage {
             ps.setLong(2, genre.getId());
         });
     }
+
+    private Set<Long> getLikedFilmIds(Long userId) {
+        String sql = "SELECT film_id " +
+                "FROM likes " +
+                "WHERE user_id = ?";
+        return new HashSet<>(jdbcTemplate.queryForList(sql, Long.class, userId));
+    }
+
+    @Override
+    public Optional<Long> getSimilarUserId(Long userId) {
+        String sql = "SELECT l2.user_id " +
+                "FROM likes AS l1 " +
+                "INNER JOIN likes AS l2 ON l1.film_id = l2.film_id AND l1.user_id != l2.user_id " +
+                "WHERE l1.user_id = ? " +
+                "GROUP BY l2.user_id " +
+                "ORDER BY COUNT(l2.film_id) DESC " +
+                "LIMIT 1";
+        List<Long> similarUserId = jdbcTemplate.query(sql, (rs, rowNum) ->
+                        rs.getLong("user_id"),
+                userId);
+        return similarUserId.stream().findFirst();
+    }
+
+    @Override
+    public List<Film> getRecommendations(Long userId, Long similarUserId) {
+        String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
+                "FROM films As f " +
+                "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
+                "INNER JOIN likes AS l ON f.id = l.film_id " +
+                "WHERE l.user_id = ? AND f.id NOT IN (SELECT film_id " +
+                "FROM likes " +
+                "WHERE user_id = ?) ";
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, similarUserId, userId);
+        for (Film film : films) {
+            film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
+            film.setMpa(getMpaForFilm(film.getId()));
+        }
+        return films;
+    }
 }
