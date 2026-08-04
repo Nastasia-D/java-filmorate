@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.dal.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.dal.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.dal.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -321,7 +322,7 @@ public class DbStorageTest {
 
         filmStorage.addLikeFilm(createFilm.getId(), createUser.getId());
 
-        List<Film> topFilms = filmStorage.getTopFilms(1);
+        List<Film> topFilms = filmStorage.getTopFilms(1, null, null);
         assertThat(topFilms).hasSize(1);
         assertThat(topFilms.get(0).getId()).isEqualTo(createFilm.getId());
     }
@@ -350,7 +351,7 @@ public class DbStorageTest {
 
         filmStorage.removeLike(createFilm.getId(), createUser.getId());
 
-        List<Film> topFilms = filmStorage.getTopFilms(1);
+        List<Film> topFilms = filmStorage.getTopFilms(1, null, null);
         assertThat(topFilms).hasSize(1);
         assertThat(topFilms.get(0).getId()).isEqualTo(createFilm.getId());
     }
@@ -397,7 +398,7 @@ public class DbStorageTest {
         filmStorage.addLikeFilm(createFilm1.getId(), createUser1.getId());
         filmStorage.addLikeFilm(createFilm2.getId(), createUser2.getId());
         filmStorage.addLikeFilm(createFilm1.getId(), createUser2.getId());
-        List<Film> topFilms = filmStorage.getTopFilms(10);
+        List<Film> topFilms = filmStorage.getTopFilms(10, null, null);
 
         assertThat(topFilms).hasSize(2);
         assertThat(topFilms.get(0).getId()).isEqualTo(film1.getId());
@@ -427,5 +428,61 @@ public class DbStorageTest {
 
         Set<User> friends = userStorage.getFriends(user1.getId());
         assertThat(friends).isEmpty();
+    }
+
+    @Test
+    public void testFindFilmGetTopFilmsByGenreAndYear() {
+        Genre genre1 = new Genre();
+        genre1.setId(1L);
+
+        Genre genre2 = new Genre();
+        genre2.setId(2L);
+
+        Mpa mpa = new Mpa();
+        mpa.setId(1L);
+
+        User user1 = new User();
+        user1.setLogin("login1");
+        user1.setEmail("valid1@email.com");
+        user1.setName("name1");
+        user1.setBirthday(LocalDate.of(1998, 2, 7));
+
+        User createUser1 = userStorage.create(user1);
+
+        User user2 = new User();
+        user2.setLogin("login2");
+        user2.setEmail("valid2@email.com");
+        user2.setName("name2");
+        user2.setBirthday(LocalDate.of(1998, 2, 7));
+
+        User createUser2 = userStorage.create(user2);
+
+        Film film1 = new Film();
+        film1.setName("name1");
+        film1.setDescription("description1");
+        film1.setReleaseDate(LocalDate.of(1998, 2, 7));
+        film1.setDuration(120);
+        film1.setMpa(mpa);
+        film1.setGenres(Set.of(genre1));
+
+        Film createFilm1 = filmStorage.create(film1);
+
+        Film film2 = new Film();
+        film2.setName("name2");
+        film2.setDescription("description2");
+        film2.setReleaseDate(LocalDate.of(1998, 2, 7));
+        film2.setDuration(120);
+        film2.setMpa(mpa);
+        film2.setGenres(Set.of(genre2));
+
+        Film createFilm2 = filmStorage.create(film2);
+
+        filmStorage.addLikeFilm(createFilm1.getId(), createUser1.getId());
+        filmStorage.addLikeFilm(createFilm2.getId(), createUser2.getId());
+        filmStorage.addLikeFilm(createFilm1.getId(), createUser2.getId());
+        List<Film> topFilms = filmStorage.getTopFilms(10, 1L, 1998);
+
+        assertThat(topFilms).hasSize(1);
+        assertThat(topFilms.get(0).getId()).isEqualTo(createFilm1.getId());
     }
 }
