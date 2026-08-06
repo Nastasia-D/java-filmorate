@@ -214,11 +214,6 @@ public class FilmDbStorage implements FilmStorage {
         }
         return films;
     }
-                jdbcTemplate.batchUpdate(sqlGenres, uniqueGenres, uniqueGenres.size(), (ps, genre) -> {
-                    ps.setLong(1, film.getId());
-                    ps.setLong(2, genre.getId());
-                });
-            }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
