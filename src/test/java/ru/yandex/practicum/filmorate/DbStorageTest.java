@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -572,4 +574,57 @@ public class DbStorageTest {
 
         assertThat(similarUserId).isEmpty();
     }
+
+    @Test
+    public void testGetCommonFilms() {
+        Mpa mpa = new Mpa();
+        mpa.setId(1L);
+
+        User user1 = new User();
+        user1.setLogin("login1");
+        user1.setEmail("valid1@email.com");
+        user1.setName("name1");
+        user1.setBirthday(LocalDate.of(1998, 2, 7));
+
+        User createUser1 = userStorage.create(user1);
+
+        User user2 = new User();
+        user2.setLogin("login2");
+        user2.setEmail("valid2@email.com");
+        user2.setName("name2");
+        user2.setBirthday(LocalDate.of(1998, 2, 7));
+
+        User createUser2 = userStorage.create(user2);
+
+        userStorage.addFriend(user1.getId(), user2.getId());
+        userStorage.addFriend(user2.getId(), user1.getId());
+
+        Film film1 = new Film();
+        film1.setName("name1");
+        film1.setDescription("description1");
+        film1.setReleaseDate(LocalDate.of(1998, 2, 7));
+        film1.setDuration(120);
+        film1.setMpa(mpa);
+
+        Film createFilm1 = filmStorage.create(film1);
+
+        Film film2 = new Film();
+        film2.setName("name2");
+        film2.setDescription("description2");
+        film2.setReleaseDate(LocalDate.of(1998, 2, 7));
+        film2.setDuration(120);
+        film2.setMpa(mpa);
+
+        Film createFilm2 = filmStorage.create(film2);
+
+        filmStorage.addLikeFilm(createFilm1.getId(), createUser1.getId());
+        filmStorage.addLikeFilm(createFilm2.getId(), createUser2.getId());
+        filmStorage.addLikeFilm(createFilm1.getId(), createUser2.getId());
+
+        List<Film> commonFilms = filmStorage.getCommonFilms(createUser1.getId(), createUser2.getId());
+        assertNotNull(commonFilms, "Список общих фильмов не должен быть null");
+        assertEquals(1, commonFilms.size(), "Должен быть ровно один общий фильм");
+        assertEquals(createFilm1.getId(), commonFilms.get(0).getId(), "Общим должен быть именно film1");
+    }
+
 }

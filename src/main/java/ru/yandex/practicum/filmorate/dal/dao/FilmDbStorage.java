@@ -214,4 +214,22 @@ public class FilmDbStorage implements FilmStorage {
         }
         return films;
     }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
+                "FROM films AS f " +
+                "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
+                "INNER JOIN likes AS l1 ON f.id = l1.film_id AND l1.user_id = ? " +
+                "INNER JOIN likes AS l2 ON f.id = l2.film_id AND l2.user_id = ? " +
+                "LEFT JOIN likes AS l3 ON f.id = l3.film_id " +
+                "GROUP BY f.id " +
+                "ORDER BY COUNT(l3.user_id) DESC";
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, userId, friendId);
+        for (Film film : films) {
+            film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
+            film.setMpa(getMpaForFilm(film.getId()));
+        }
+        return films;
+    }
+
 }

@@ -24,4 +24,6 @@ public interface FilmStorage {
     Optional<Long> getSimilarUserId(Long userId);
 
     List<Film> getRecommendations(Long userId, Long similarUserId);
+
+    List<Film> getCommonFilms(Long userId, Long friendId);
 }
