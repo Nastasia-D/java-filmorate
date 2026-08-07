@@ -32,8 +32,6 @@ public class UserDbStorage implements UserStorage {
     }
 
 
-
-
     @Override
     public Collection<User> findAll() {
         String sql = "SELECT * " +
