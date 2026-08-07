@@ -62,8 +62,8 @@ public class FilmService {
         filmStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getTopFilms(Integer count) {
-        return filmStorage.getTopFilms(count);
+    public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
+        return filmStorage.getTopFilms(count, genreId, year);
     }
 
     public Optional<Film> findById(Long id) {
@@ -82,5 +82,11 @@ public class FilmService {
                         .orElseThrow(() -> new NotFoundException("Жанр с id " + film.getMpa().getId() + " не найден"));
             }
         }
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        userService.getUser(userId);
+        userService.getUser(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }

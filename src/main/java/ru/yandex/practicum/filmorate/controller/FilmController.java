@@ -48,8 +48,8 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count) {
-        return filmService.getTopFilms(count);
+    public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count, @RequestParam(required = false) Long genreId, @RequestParam(required = false) Integer year) {
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @PutMapping("{id}/like/{userId}")
@@ -66,6 +66,11 @@ public class FilmController {
     public Film findById(@PathVariable Long id) {
         return filmService.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     public void validateFilm(Film film) {
