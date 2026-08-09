@@ -219,4 +219,58 @@ public class FilmDbStorage implements FilmStorage {
         }
         return films;
     }
+
+    //новый метод для поиска фильма
+    @Override
+    public List<Film> searchFilms(String query, List<String> searchBy) {
+        List<Film> allFilms = new ArrayList<>();
+        Set<Long> addedFilmIds = new HashSet<>();
+        String likePattern = "%" + query.toLowerCase() + "%";
+
+        // Поиск по названию
+        if (searchBy.contains("title")) {
+            String sqlTitle =
+                    "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
+                            "FROM films AS f " +
+                            "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
+                            "WHERE LOWER(f.name) LIKE ? " +
+                            "ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.id) DESC, f.id ASC";
+
+            List<Film> titleFilms = jdbcTemplate.query(sqlTitle, filmRowMapper, likePattern);
+            for (Film film : titleFilms) {
+                if (!addedFilmIds.contains(film.getId())) {
+                    addedFilmIds.add(film.getId());
+                    allFilms.add(film);
+                }
+            }
+        }
+
+        // Поиск по режиссёру
+        if (searchBy.contains("director")) {
+            String sqlDirector =
+                    "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
+                            "FROM films AS f " +
+                            "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
+                            "INNER JOIN film_directors AS fd ON f.id = fd.film_id " +
+                            "INNER JOIN directors AS d ON fd.director_id = d.id " +
+                            "WHERE LOWER(d.name) LIKE ? " +
+                            "ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.id) DESC, f.id ASC";
+
+            List<Film> directorFilms = jdbcTemplate.query(sqlDirector, filmRowMapper, likePattern);
+            for (Film film : directorFilms) {
+                if (!addedFilmIds.contains(film.getId())) {
+                    addedFilmIds.add(film.getId());
+                    allFilms.add(film);
+                }
+            }
+        }
+
+        // Загружаем жанры и режиссёров для каждого фильма
+        for (Film film : allFilms) {
+            film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
+            film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId())));
+        }
+
+        return allFilms;
+    }
 }

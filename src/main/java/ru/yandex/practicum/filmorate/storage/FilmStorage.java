@@ -22,4 +22,6 @@ public interface FilmStorage {
     List<Film> getTopFilms(Integer count);
 
     List<Film> getFilmsByDirector(Long directorId, String sortBy);// новый метод для получения фильмов по режжисерам
+
+    List<Film> searchFilms(String query, List<String> searchBy); // новый метод для поиска
 }

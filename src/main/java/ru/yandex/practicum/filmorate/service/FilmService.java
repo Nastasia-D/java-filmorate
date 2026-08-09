@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -11,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -97,5 +99,31 @@ public class FilmService {
         }
 
         return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
+    public List<Film> searchFilms(String query, String by) {
+        List<String> searchBy = new ArrayList<>();
+        if (by == null || by.isBlank()) {
+
+            searchBy.add("title");
+        } else {
+            String[] parts = by.split(",");
+            for (String part : parts) {
+                String trimmed = part.trim().toLowerCase();
+                if (trimmed.equals("title") || trimmed.equals("director")) {
+                    searchBy.add(trimmed);
+                }
+            }
+            if (searchBy.isEmpty()) {
+                // Если указаны невалидные значения, ищем по названию по умолчанию
+                searchBy.add("title");
+            }
+        }
+
+        if (query == null || query.isBlank()) {
+            throw new ValidationException("Текст для поиска не может быть пустым");
+        }
+
+        return filmStorage.searchFilms(query, searchBy);
     }
 }
