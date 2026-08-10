@@ -20,8 +20,4 @@ public interface FilmStorage {
     void removeLike(Long filmId, Long userId);
 
     List<Film> getTopFilms(Integer count);
-
-    List<Film> getFilmsByDirector(Long directorId, String sortBy);// новый метод для получения фильмов по режжисерам
-
-    List<Film> searchFilms(String query, List<String> searchBy);
 }
