@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -21,6 +22,12 @@ public class FilmService {
     private final UserService userService;
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
+
+    public void delete(Long filmId) {
+        getFilm(filmId);
+        filmStorage.delete(filmId);
+    }
+
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();

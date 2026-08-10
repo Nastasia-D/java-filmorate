@@ -22,4 +22,7 @@ public interface UserStorage {
     Set<User> getCommonFriends(Long userId, Long friendId);
 
     void deleteFriend(Long userId, Long friendId);
+
+    void delete(Long userId);
+
 }
