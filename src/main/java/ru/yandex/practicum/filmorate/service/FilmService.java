@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -12,6 +13,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -111,4 +113,42 @@ public class FilmService {
         userService.getUser(friendId);
         return filmStorage.getCommonFilms(userId, friendId);
     }
+    public List<Film> searchFilms(String query, String by) {
+        if (query == null || query.isBlank()) {
+            throw new ValidationException("Текст для поиска не может быть пустым");
+        }
+
+        List<String> searchBy = new ArrayList<>();
+
+        if (by == null || by.isBlank()) {
+            searchBy.add("title");
+        } else {
+            String[] parts = by.split(",");
+            for (String part : parts) {
+                String trimmed = part.trim().toLowerCase();
+
+                if (trimmed.isEmpty()) {
+                    throw new ValidationException("Параметр 'by' не может содержать пустые значения");
+                }
+
+                if (trimmed.equals("title")) {
+                    searchBy.add("title");
+                } else if (trimmed.equals("director")) {
+                    searchBy.add("director");
+                } else {
+                    throw new ValidationException(
+                            "Некорректное значение параметра 'by': '" + part + "'. " +
+                                    "Допустимые значения: 'title', 'director' или 'title,director'"
+                    );
+                }
+            }
+
+            if (searchBy.isEmpty()) {
+                throw new ValidationException("Параметр 'by' не может быть пустым");
+            }
+        }
+
+        return filmStorage.searchFilms(query, searchBy);
+    }
+
 }

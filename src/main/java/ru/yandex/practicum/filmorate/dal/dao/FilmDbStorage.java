@@ -306,4 +306,54 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    //новый метод для поиска фильма
+    @Override
+    public List<Film> searchFilms(String query, List<String> searchBy) {
+        Set<Long> allFilmIds = new HashSet<>();
+        String likePattern = "%" + query.toLowerCase() + "%";
+
+        // Поиск по названию
+        if (searchBy.contains("title")) {
+            // Меняем: запрос только на ID
+            String sqlTitle = "SELECT f.id FROM films AS f WHERE LOWER(f.name) LIKE ?";
+            List<Long> ids = jdbcTemplate.query(sqlTitle, (rs, rowNum) -> rs.getLong("id"), likePattern);
+            allFilmIds.addAll(ids);
+        }
+
+        // Поиск по режиссёру
+        if (searchBy.contains("director")) {
+            String sqlDirector =
+                    "SELECT f.id FROM films AS f " +
+                            "INNER JOIN film_directors AS fd ON f.id = fd.film_id " +
+                            "INNER JOIN directors AS d ON fd.director_id = d.id " +
+                            "WHERE LOWER(d.name) LIKE ?";
+            List<Long> ids = jdbcTemplate.query(sqlDirector, (rs, rowNum) -> rs.getLong("id"), likePattern);
+            allFilmIds.addAll(ids);
+        }
+
+        if (allFilmIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String idsStr = String.join(",", Collections.nCopies(allFilmIds.size(), "?"));
+        String sql =
+                "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
+                        "FROM films AS f " +
+                        "INNER JOIN mpa AS m ON f.mpa_id = m.id " +
+                        "WHERE f.id IN (" + idsStr + ") " +
+                        "ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.id) DESC, f.id ASC";
+
+
+        List<Film> films = jdbcTemplate.query(sql, filmRowMapper, allFilmIds.toArray());
+
+        // Загружаем жанры и режиссёров для каждого фильма
+        for (Film film : films) {
+            film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
+            film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId())));
+        }
+
+        return films;
+    }
+
+
 }
