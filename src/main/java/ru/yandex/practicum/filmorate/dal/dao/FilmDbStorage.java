@@ -38,7 +38,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
 
-
     @Override
     public Collection<Film> findAll() {
         String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
@@ -250,6 +249,7 @@ public class FilmDbStorage implements FilmStorage {
         }
         return films;
     }
+
     private Set<Long> getLikedFilmIds(Long userId) {
         String sql = "SELECT film_id " +
                 "FROM likes " +
