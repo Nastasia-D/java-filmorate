@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
@@ -22,6 +24,7 @@ public class FilmService {
     private final UserService userService;
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
+    private final DirectorStorage directorStorage;// новое поле
 
     public void delete(Long filmId) {
         getFilm(filmId);
@@ -79,9 +82,28 @@ public class FilmService {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             for (Genre genre : film.getGenres()) {
                 genreStorage.findById(genre.getId())
-                        .orElseThrow(() -> new NotFoundException("Жанр с id " + film.getMpa().getId() + " не найден"));
+                        .orElseThrow(() -> new NotFoundException("Жанр с id " + genre.getId() + " не найден")); // ошибка CRTL-V(С)  было вот так "film.getMpa().getId()"
             }
         }
+        // Валидация режиссеров
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            for (Director director : film.getDirectors()) {
+                directorStorage.findById(director.getId())
+                        .orElseThrow(() -> new NotFoundException("Режиссёр с id " + director.getId() + " не найден"));
+            }
+        }
+    }
+
+    // НОВЫЙ МЕТОД
+    public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
+        directorStorage.findById(directorId)
+                .orElseThrow(() -> new NotFoundException("Режиссёр с id " + directorId + " не найден"));
+
+        if (!"year".equalsIgnoreCase(sortBy) && !"likes".equalsIgnoreCase(sortBy)) {
+            throw new IllegalArgumentException("Неверный параметр сортировки. Допустимые значения: year, likes");
+        }
+
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {
