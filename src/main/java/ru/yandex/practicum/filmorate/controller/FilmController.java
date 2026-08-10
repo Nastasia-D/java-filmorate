@@ -31,7 +31,6 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
-
         return filmService.findAll();
     }
 
