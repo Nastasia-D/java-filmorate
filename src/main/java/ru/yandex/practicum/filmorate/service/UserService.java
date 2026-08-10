@@ -3,17 +3,18 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -27,6 +28,12 @@ public class UserService {
         return userStorage.findById(id)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден"));
     }
+
+    public void delete(Long userId) {
+        getUser(userId);
+        userStorage.delete(userId);
+    }
+
 
     public User update(User user) {
         return userStorage.update(user);
@@ -58,5 +65,14 @@ public class UserService {
 
     public Optional<User> findById(Long id) {
         return userStorage.findById(id);
+    }
+
+    public List<Film> getRecommendations(Long userId) {
+        User user = getUser(userId);
+        Optional<Long> similarUserId = filmStorage.getSimilarUserId(userId);
+        if (similarUserId.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return filmStorage.getRecommendations(userId, similarUserId.get());
     }
 }

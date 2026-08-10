@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -24,6 +25,12 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
     private final DirectorStorage directorStorage;// новое поле
+
+    public void delete(Long filmId) {
+        getFilm(filmId);
+        filmStorage.delete(filmId);
+    }
+
 
     public Collection<Film> findAll() {
         return filmStorage.findAll();
@@ -58,8 +65,8 @@ public class FilmService {
         filmStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getTopFilms(Integer count) {
-        return filmStorage.getTopFilms(count);
+    public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
+        return filmStorage.getTopFilms(count, genreId, year);
     }
 
     public Optional<Film> findById(Long id) {
@@ -97,5 +104,11 @@ public class FilmService {
         }
 
         return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        userService.getUser(userId);
+        userService.getUser(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }

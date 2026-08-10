@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -20,6 +21,13 @@ import java.util.List;
 public class FilmController {
 
     private final FilmService filmService;
+
+    @DeleteMapping("/{filmId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteFilm(@PathVariable Long filmId) {
+        filmService.delete(filmId);
+    }
+
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -40,8 +48,8 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count) {
-        return filmService.getTopFilms(count);
+    public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count, @RequestParam(required = false) Long genreId, @RequestParam(required = false) Integer year) {
+        return filmService.getTopFilms(count, genreId, year);
     }
 
     @PutMapping("{id}/like/{userId}")
@@ -58,6 +66,11 @@ public class FilmController {
     public Film findById(@PathVariable Long id) {
         return filmService.findById(id)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + id + " не найден"));
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     public void validateFilm(Film film) {

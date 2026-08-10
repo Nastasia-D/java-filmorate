@@ -3,15 +3,18 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 import java.util.Collection;
 
+import java.util.List;
 import java.util.Set;
 
 @Slf4j
@@ -21,6 +24,12 @@ import java.util.Set;
 public class UserController {
 
     private final UserService userService;
+
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable Long userId) {
+        userService.delete(userId);
+    }
 
     @GetMapping
     public Collection<User> findAll() {
@@ -66,6 +75,10 @@ public class UserController {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
     }
 
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable Long id) {
+        return userService.getRecommendations(id);
+    }
 
     public void validateUser(User user) {
         if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
