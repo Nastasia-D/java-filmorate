@@ -113,6 +113,7 @@ public class FilmService {
         userService.getUser(friendId);
         return filmStorage.getCommonFilms(userId, friendId);
     }
+
     public List<Film> searchFilms(String query, String by) {
         if (query == null || query.isBlank()) {
             throw new ValidationException("Текст для поиска не может быть пустым");
