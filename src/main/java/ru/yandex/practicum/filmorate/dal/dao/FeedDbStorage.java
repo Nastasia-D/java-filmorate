@@ -19,13 +19,16 @@ public class FeedDbStorage implements FeedStorage {
 
     @Override
     public void addEvent(Event event) {
-        String sql = "INSERT INTO feed (timestamp, user_id, event_type, operation, entity_id) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO feed (timestamp, user_id, event_type, operation, entity_id) VALUES (?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, event.getTimestamp(), event.getUserId(), event.getEventType().name(), event.getOperation().name(), event.getEntityId());
     }
 
     @Override
     public List<Event> getFeed(Long userId) {
-        String sql = "SELECT * FROM feed WHERE user_id = ?";
+        String sql = "SELECT * " +
+                "FROM feed " +
+                "WHERE user_id = ? " +
+                "ORDER BY timestamp ASC";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Event event = new Event();
             event.setEventId(rs.getLong("event_id"));

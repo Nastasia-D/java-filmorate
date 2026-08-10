@@ -77,7 +77,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/feed")
-    public List<Event> getFeed(Long id) {
+    public List<Event> getFeed(@PathVariable Long id) {
         log.info("Получен запрос на получение ленты событий пользователя с id = {}", id);
         return userService.getFeed(id);
     }

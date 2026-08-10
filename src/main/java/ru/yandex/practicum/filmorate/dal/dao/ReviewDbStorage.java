@@ -123,6 +123,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void addLike(Long reviewId, Long userId) {
+        jdbcTemplate.update("DELETE FROM review_likes WHERE review_id = ? AND user_id = ?", reviewId, userId);
 
         jdbcTemplate.update(
                 """
@@ -141,6 +142,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void addDislike(Long reviewId, Long userId) {
+        jdbcTemplate.update("DELETE FROM review_likes WHERE review_id = ? AND user_id = ?", reviewId, userId);
 
         jdbcTemplate.update(
                 """
@@ -151,9 +153,15 @@ public class ReviewDbStorage implements ReviewStorage {
                 userId
         );
 
-        jdbcTemplate.update(
-                "UPDATE reviews SET useful = useful - 1 WHERE review_id = ?",
-                reviewId
+        jdbcTemplate.update("""
+                UPDATE reviews
+                SET useful = (
+                    SELECT COALESCE(SUM(CASE WHEN is_like = TRUE THEN 1 WHEN is_like = FALSE THEN -1 ELSE 0 END), 0)
+                    FROM review_likes
+                    WHERE review_id = ?
+                )
+                WHERE review_id = ?
+                """, reviewId, reviewId
         );
     }
 

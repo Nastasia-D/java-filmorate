@@ -37,6 +37,7 @@ public class UserService {
 
 
     public User update(User user) {
+        getUser(user.getId());
         return userStorage.update(user);
     }
 
