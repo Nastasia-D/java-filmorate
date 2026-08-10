@@ -273,6 +273,7 @@ public class FilmDbStorage implements FilmStorage {
     // Новый метод для получения фильмов по режиссёру
     public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
         String orderBy = "";
+
         if ("year".equalsIgnoreCase(sortBy)) {
             orderBy = "ORDER BY f.release_date";
         } else if ("likes".equalsIgnoreCase(sortBy)) {
