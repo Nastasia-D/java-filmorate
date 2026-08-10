@@ -67,13 +67,21 @@ public class FilmService {
         filmStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getTopFilms(Integer count) {
-        return filmStorage.getTopFilms(count);
+    public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
+        return filmStorage.getTopFilms(count, genreId, year);
     }
 
     public Optional<Film> findById(Long id) {
         return filmStorage.findById(id);
     }
+
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        userService.getUser(userId);
+        userService.getUser(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
 
     private void validateMpaAndGenres(Film film) {
         if (film.getMpa() != null && film.getMpa().getId() != null) {
@@ -84,7 +92,7 @@ public class FilmService {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             for (Genre genre : film.getGenres()) {
                 genreStorage.findById(genre.getId())
-                        .orElseThrow(() -> new NotFoundException("Жанр с id " + genre.getId()  + " не найден")); // ошибка CRTL-V(С)  было вот так "film.getMpa().getId()"
+                        .orElseThrow(() -> new NotFoundException("Жанр с id " + genre.getId() + " не найден")); // ошибка CRTL-V(С)  было вот так "film.getMpa().getId()"
             }
         }
         // Валидация режиссеров
@@ -95,6 +103,7 @@ public class FilmService {
             }
         }
     }
+
     // НОВЫЙ МЕТОД
     public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
         directorStorage.findById(directorId)
