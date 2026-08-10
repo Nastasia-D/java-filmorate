@@ -30,6 +30,16 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
+    public void delete(Long filmId) {
+        jdbcTemplate.update(
+                "DELETE FROM films WHERE id = ?",
+                filmId
+        );
+    }
+
+
+
+    @Override
     public Collection<Film> findAll() {
         String sql = "SELECT f.*, m.id AS \"mpa.id\", m.name AS \"mpa.name\" " +
                 "FROM films AS f " +

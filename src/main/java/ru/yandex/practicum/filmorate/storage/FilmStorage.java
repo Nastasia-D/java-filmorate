@@ -20,6 +20,9 @@ public interface FilmStorage {
     void removeLike(Long filmId, Long userId);
 
     List<Film> getTopFilms(Integer count);
+    void delete(Long filmId);
+
+    List<Film> getTopFilms(Integer count, Long genreId, Integer year);
 
     List<Film> getFilmsByDirector(Long directorId, String sortBy);// новый метод для получения фильмов по режжисерам
 
