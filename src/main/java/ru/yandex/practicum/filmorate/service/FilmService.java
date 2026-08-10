@@ -101,26 +101,38 @@ public class FilmService {
     }
 
     public List<Film> searchFilms(String query, String by) {
-        List<String> searchBy = new ArrayList<>();
-        if (by == null || by.isBlank()) {
+        if (query == null || query.isBlank()) {
+            throw new ValidationException("Текст для поиска не может быть пустым");
+        }
 
+        List<String> searchBy = new ArrayList<>();
+
+        if (by == null || by.isBlank()) {
             searchBy.add("title");
         } else {
             String[] parts = by.split(",");
             for (String part : parts) {
                 String trimmed = part.trim().toLowerCase();
-                if (trimmed.equals("title") || trimmed.equals("director")) {
-                    searchBy.add(trimmed);
+
+                if (trimmed.isEmpty()) {
+                    throw new ValidationException("Параметр 'by' не может содержать пустые значения");
+                }
+
+                if (trimmed.equals("title")) {
+                    searchBy.add("title");
+                } else if (trimmed.equals("director")) {
+                    searchBy.add("director");
+                } else {
+                    throw new ValidationException(
+                            "Некорректное значение параметра 'by': '" + part + "'. " +
+                                    "Допустимые значения: 'title', 'director' или 'title,director'"
+                    );
                 }
             }
-            if (searchBy.isEmpty()) {
-                // Если указаны невалидные значения, ищем по названию по умолчанию
-                searchBy.add("title");
-            }
-        }
 
-        if (query == null || query.isBlank()) {
-            throw new ValidationException("Текст для поиска не может быть пустым");
+            if (searchBy.isEmpty()) {
+                throw new ValidationException("Параметр 'by' не может быть пустым");
+            }
         }
 
         return filmStorage.searchFilms(query, searchBy);
