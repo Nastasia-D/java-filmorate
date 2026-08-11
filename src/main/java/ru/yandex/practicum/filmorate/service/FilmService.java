@@ -9,6 +9,8 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
@@ -27,6 +29,7 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
     private final DirectorStorage directorStorage;// новое поле
+    private final FeedStorage feedStorage;
 
     public void delete(Long filmId) {
         getFilm(filmId);
@@ -53,6 +56,7 @@ public class FilmService {
         getFilm(filmId);
         userService.getUser(userId);
         filmStorage.addLikeFilm(filmId, userId);
+        feedStorage.addEvent(new Event(null, System.currentTimeMillis(), userId, EventType.LIKE, Operation.ADD, filmId));
     }
 
     public Film getFilm(Long id) {
@@ -65,6 +69,7 @@ public class FilmService {
         userService.getUser(userId);
 
         filmStorage.removeLike(filmId, userId);
+        feedStorage.addEvent(new Event(null, System.currentTimeMillis(), userId, EventType.LIKE, Operation.REMOVE, filmId));
     }
 
     public List<Film> getTopFilms(Integer count, Long genreId, Integer year) {
@@ -84,7 +89,7 @@ public class FilmService {
         if (film.getGenres() != null && !film.getGenres().isEmpty()) {
             for (Genre genre : film.getGenres()) {
                 genreStorage.findById(genre.getId())
-                        .orElseThrow(() -> new NotFoundException("Жанр с id " + genre.getId() + " не найден")); // ошибка CRTL-V(С)  было вот так "film.getMpa().getId()"
+                        .orElseThrow(() -> new NotFoundException("Жанр с id " + genre.getId() + " не найден"));
             }
         }
         // Валидация режиссеров
