@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-
-
 @Component
 @RequiredArgsConstructor
 public class ExistsValidator implements ConstraintValidator<Exists, Long> {
@@ -28,32 +26,33 @@ public class ExistsValidator implements ConstraintValidator<Exists, Long> {
             return false;
         }
 
+        boolean exists = false;
+        String entityName = "";
+
         try {
             switch (entityType) {
                 case USER:
-                    userService.findById(value);
+                    exists = userService.findById(value).isPresent();
+                    entityName = "Пользователь";
                     break;
                 case FILM:
-                    filmService.findById(value);
+                    exists = filmService.findById(value).isPresent();
+                    entityName = "Фильм";
                     break;
                 default:
                     return false;
             }
-            return true;
         } catch (Exception e) {
+            return false;
+        }
+
+        if (!exists) {
             context.disableDefaultConstraintViolation();
-            String entityName = getEntityName();
             context.buildConstraintViolationWithTemplate(
                     entityName + " с id " + value + " не найден"
             ).addConstraintViolation();
-            return false;
         }
-    }
 
-    private String getEntityName() {
-        return switch (entityType) {
-            case USER -> "Пользователь";
-            case FILM -> "Фильм";
-        };
+        return exists;
     }
 }
