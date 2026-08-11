@@ -3,17 +3,19 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
+    private final FeedStorage feedStorage;
 
     public Collection<User> findAll() {
         return userStorage.findAll();
@@ -28,7 +30,14 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден"));
     }
 
+    public void delete(Long userId) {
+        getUser(userId);
+        userStorage.delete(userId);
+    }
+
+
     public User update(User user) {
+        getUser(user.getId());
         return userStorage.update(user);
     }
 
@@ -41,12 +50,15 @@ public class UserService {
         User user = getUser(userId);
         User friend = getUser(friendId);
         userStorage.addFriend(userId, friendId);
+
+        feedStorage.addEvent(new Event(null, System.currentTimeMillis(), userId, EventType.FRIEND, Operation.ADD, friendId));
     }
 
     public void deleteFriend(Long userId, Long friendId) {
         getUser(userId);
         getUser(friendId);
         userStorage.deleteFriend(userId, friendId);
+        feedStorage.addEvent(new Event(null, System.currentTimeMillis(), userId, EventType.FRIEND, Operation.REMOVE, friendId));
     }
 
     public Set<User> getCommonFriends(Long userId, Long friendId) {
@@ -58,5 +70,19 @@ public class UserService {
 
     public Optional<User> findById(Long id) {
         return userStorage.findById(id);
+    }
+
+    public List<Film> getRecommendations(Long userId) {
+        User user = getUser(userId);
+        Optional<Long> similarUserId = filmStorage.getSimilarUserId(userId);
+        if (similarUserId.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return filmStorage.getRecommendations(userId, similarUserId.get());
+    }
+
+    public List<Event> getFeed(Long userId) {
+        getUser(userId);
+        return feedStorage.getFeed(userId);
     }
 }
