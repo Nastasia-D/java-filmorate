@@ -19,7 +19,7 @@ public class DirectorController {
     @GetMapping
     public Collection<Director> findAll() {
         log.info("Запрос на получение всех режиссёров");
-        return directorService.findAll();  // ← Просто возвращаем из сервиса
+        return directorService.findAll();
     }
 
     @GetMapping("/{id}")

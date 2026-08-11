@@ -25,10 +25,12 @@ public class FeedDbStorage implements FeedStorage {
 
     @Override
     public List<Event> getFeed(Long userId) {
-        String sql = "SELECT * " +
-                "FROM feed " +
-                "WHERE user_id = ? " +
-                "ORDER BY event_id ASC";
+        String sql = """
+                SELECT *
+                FROM feed
+                WHERE user_id = ?
+                ORDER BY event_id ASC
+                """;
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Event event = new Event();
             event.setEventId(rs.getLong("event_id"));
