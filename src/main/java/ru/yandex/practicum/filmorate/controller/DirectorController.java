@@ -1,9 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 
@@ -29,41 +30,27 @@ public class DirectorController {
     }
 
     @PostMapping
-    public Director create(@RequestBody Director director) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public Director create(@Valid @RequestBody Director director) {
         log.info("Запрос на создание режиссёра: {}", director);
-        validateDirector(director);
         Director created = directorService.create(director);
         log.info("Режиссёр создан: {}", created);
         return created;
     }
 
     @PutMapping
-    public Director update(@RequestBody Director director) {
+    public Director update(@Valid @RequestBody Director director) {
         log.info("Запрос на обновление режиссёра: {}", director);
-
-        validateDirector(director);
-
-        if (director.getId() == null) {
-            log.warn("Попытка обновления режиссёра без ID");
-            throw new ValidationException("ID режиссёра не может быть пустым");
-        }
-
         Director updated = directorService.update(director);
         log.info("Режиссёр обновлён: {}", updated);
         return updated;
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable Long id) {
         log.info("Запрос на удаление режиссёра с id: {}", id);
         directorService.delete(id);
         log.info("Режиссёр с id {} удалён", id);
-    }
-
-    private void validateDirector(Director director) {
-        if (director.getName() == null || director.getName().isBlank()) {
-            log.warn("Ошибка валидации: имя режиссёра пустое");
-            throw new ValidationException("Имя режиссёра не может быть пустым");
-        }
     }
 }

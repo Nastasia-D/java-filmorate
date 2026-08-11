@@ -135,7 +135,7 @@ public class FilmDbStorage implements FilmStorage {
         }
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
         batchUpdateGenre(film);
-        batchUpdateDirectors(film);// обновление режиссера
+        batchUpdateDirectors(film);
         return findById(film.getId()).orElse(film);
     }
 
@@ -153,7 +153,7 @@ public class FilmDbStorage implements FilmStorage {
 
         Film film = filmList.get(0);
         film.setGenres(new LinkedHashSet<>(getGenresForFilm(id)));
-        film.setDirectors(new HashSet<>(getDirectorsForFilm(id)));//опять режиссеры
+        film.setDirectors(new HashSet<>(getDirectorsForFilm(id)));
         return Optional.of(film);
     }
 
@@ -204,7 +204,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void batchUpdateDirectors(Film film) {
-        // Удаляем старые связи
+
         jdbcTemplate.update("DELETE FROM film_directors WHERE film_id = ?", film.getId());
 
         if (film.getDirectors() == null || film.getDirectors().isEmpty()) {
@@ -220,7 +220,7 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
-    // Новый метод для получения фильмов по режиссёру
+
     public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
         String orderBy = "";
         if ("year".equalsIgnoreCase(sortBy)) {
@@ -310,7 +310,6 @@ public class FilmDbStorage implements FilmStorage {
         String likePattern = "%" + query.toLowerCase() + "%";
 
         if (searchBy.contains("title")) {
-            // Меняем: запрос только на ID
             String sqlTitle = "SELECT f.id FROM films AS f WHERE LOWER(f.name) LIKE ?";
             List<Long> ids = jdbcTemplate.query(sqlTitle, (rs, rowNum) -> rs.getLong("id"), likePattern);
             allFilmIds.addAll(ids);

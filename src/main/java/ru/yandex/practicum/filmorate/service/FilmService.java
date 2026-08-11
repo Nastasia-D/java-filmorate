@@ -28,7 +28,7 @@ public class FilmService {
     private final UserService userService;
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
-    private final DirectorStorage directorStorage;// новое поле
+    private final DirectorStorage directorStorage;
     private final FeedStorage feedStorage;
 
     public void delete(Long filmId) {
@@ -92,7 +92,7 @@ public class FilmService {
                         .orElseThrow(() -> new NotFoundException("Жанр с id " + genre.getId() + " не найден"));
             }
         }
-        // Валидация режиссеров
+
         if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
             for (Director director : film.getDirectors()) {
                 directorStorage.findById(director.getId())
@@ -101,7 +101,7 @@ public class FilmService {
         }
     }
 
-    // НОВЫЙ МЕТОД
+
     public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
         directorStorage.findById(directorId)
                 .orElseThrow(() -> new NotFoundException("Режиссёр с id " + directorId + " не найден"));
