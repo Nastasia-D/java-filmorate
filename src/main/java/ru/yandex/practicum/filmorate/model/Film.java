@@ -37,6 +37,5 @@ public class Film {
     @Valid
     private Mpa mpa;
 
-    @Valid
     private Set<Director> directors = new HashSet<>();
 }
