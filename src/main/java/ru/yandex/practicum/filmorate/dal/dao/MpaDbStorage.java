@@ -19,9 +19,7 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Collection<Mpa> findAll() {
-        String sql = "SELECT * " +
-                "FROM mpa " +
-                "ORDER BY id";
+        String sql = "SELECT * FROM mpa ORDER BY id";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Mpa mpa = new Mpa();
             mpa.setId(rs.getLong("id"));

@@ -46,7 +46,7 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper);
         for (Film film : films) {
             film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
-            film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId()))); // Добавляем загрузку режиссеров
+            film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId())));
         }
         return films;
     }
@@ -69,7 +69,7 @@ public class FilmDbStorage implements FilmStorage {
         Long id = keyHolder.getKey().longValue();
         film.setId(id);
         batchUpdateGenre(film);
-        batchUpdateDirectors(film);// сохранение режисера
+        batchUpdateDirectors(film);
         return findById(id).orElse(film);
     }
 
@@ -194,7 +194,6 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
-    // Новый метод для получения режиссёров фильма
     private List<Director> getDirectorsForFilm(Long filmId) {
         String sql = "SELECT d.id, d.name " +
                 "FROM directors AS d " +
@@ -204,7 +203,6 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, directorRowMapper, filmId);
     }
 
-    // Новый метод для обновления режиссёров фильма
     private void batchUpdateDirectors(Film film) {
         // Удаляем старые связи
         jdbcTemplate.update("DELETE FROM film_directors WHERE film_id = ?", film.getId());
@@ -306,13 +304,11 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
-    //новый метод для поиска фильма
     @Override
     public List<Film> searchFilms(String query, List<String> searchBy) {
         Set<Long> allFilmIds = new HashSet<>();
         String likePattern = "%" + query.toLowerCase() + "%";
 
-        // Поиск по названию
         if (searchBy.contains("title")) {
             // Меняем: запрос только на ID
             String sqlTitle = "SELECT f.id FROM films AS f WHERE LOWER(f.name) LIKE ?";
@@ -320,7 +316,6 @@ public class FilmDbStorage implements FilmStorage {
             allFilmIds.addAll(ids);
         }
 
-        // Поиск по режиссёру
         if (searchBy.contains("director")) {
             String sqlDirector =
                     "SELECT f.id FROM films AS f " +
@@ -346,7 +341,6 @@ public class FilmDbStorage implements FilmStorage {
 
         List<Film> films = jdbcTemplate.query(sql, filmRowMapper, allFilmIds.toArray());
 
-        // Загружаем жанры и режиссёров для каждого фильма
         for (Film film : films) {
             film.setGenres(new LinkedHashSet<>(getGenresForFilm(film.getId())));
             film.setDirectors(new HashSet<>(getDirectorsForFilm(film.getId())));

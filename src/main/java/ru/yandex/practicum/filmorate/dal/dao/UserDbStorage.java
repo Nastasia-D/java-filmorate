@@ -34,8 +34,7 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        String sql = "SELECT * " +
-                "FROM users";
+        String sql = "SELECT * FROM users";
         return jdbcTemplate.query(sql, userRowMapper);
     }
 
@@ -65,9 +64,11 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        String sql = "UPDATE users " +
-                "SET email = ?, login = ?, name = ?, birthday = ? " +
-                "WHERE id = ?";
+        String sql = """ 
+                UPDATE users
+                SET email = ?, login = ?, name = ?, birthday = ?
+                WHERE id = ?
+                """;
         int rowsUpdated = jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), Date.valueOf(user.getBirthday()), user.getId());
         if (rowsUpdated == 0) {
             throw new NotFoundException("Пользователь с id " + user.getId() + " не найден");
@@ -77,30 +78,32 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Set<User> getCommonFriends(Long userId, Long friendId) {
-        String sql = "SELECT u.* " +
-                "FROM users AS u " +
-                "INNER JOIN friends AS f1 ON u.id = f1.friend_id " +
-                "INNER JOIN friends AS f2 ON u.id = f2.friend_id " +
-                "WHERE f1.user_id = ? AND f2.user_id = ?";
+        String sql = """ 
+                SELECT u.*
+                FROM users AS u
+                INNER JOIN friends AS f1 ON u.id = f1.friend_id
+                INNER JOIN friends AS f2 ON u.id = f2.friend_id
+                WHERE f1.user_id = ? AND f2.user_id = ?
+                """;
         List<User> list = jdbcTemplate.query(sql, userRowMapper, userId, friendId);
         return new HashSet<>(list);
     }
 
     @Override
     public Set<User> getFriends(Long userId) {
-        String sql = "SELECT u.* " +
-                "FROM users AS u " +
-                "INNER JOIN friends AS f ON u.id = f.friend_id " +
-                "WHERE f.user_id = ?";
+        String sql = """
+                SELECT u.*
+                FROM users AS u
+                INNER JOIN friends AS f ON u.id = f.friend_id
+                WHERE f.user_id = ?
+                """;
         List<User> list = jdbcTemplate.query(sql, userRowMapper, userId);
         return new HashSet<>(list);
     }
 
     @Override
     public Optional<User> findById(Long id) {
-        String sql = "SELECT * " +
-                "FROM users " +
-                "WHERE id = ?";
+        String sql = "SELECT * FROM users WHERE id = ?";
         List<User> users = jdbcTemplate.query(sql, userRowMapper, id);
         return users.stream().findFirst();
     }

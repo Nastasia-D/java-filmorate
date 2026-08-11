@@ -19,8 +19,7 @@ public class GenreDbStorage implements GenreStorage {
 
     @Override
     public Collection<Genre> findAll() {
-        String sql = "SELECT * " +
-                "FROM genres";
+        String sql = "SELECT * FROM genres";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Genre genre = new Genre();
             genre.setId(rs.getLong("id"));
