@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Director {
-    @NotNull(message = "ID режиссёра не может быть пустым")  // ← Проверяет ID
     @Positive(message = "ID режиссёра должен быть положительным")
     private Long id;
 
