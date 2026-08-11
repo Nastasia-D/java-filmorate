@@ -28,7 +28,7 @@ public class FeedDbStorage implements FeedStorage {
         String sql = "SELECT * " +
                 "FROM feed " +
                 "WHERE user_id = ? " +
-                "ORDER BY timestamp ASC";
+                "ORDER BY event_id ASC";
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             Event event = new Event();
             event.setEventId(rs.getLong("event_id"));
