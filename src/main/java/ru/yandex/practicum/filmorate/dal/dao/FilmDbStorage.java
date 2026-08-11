@@ -75,7 +75,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void addLikeFilm(Long filmId, Long userId) {
-        String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?)";
+        String sql = "INSERT INTO likes (film_id, user_id) VALUES (?, ?) ON CONFLICT DO NOTHING";
         jdbcTemplate.update(sql, filmId, userId);
     }
 
@@ -136,7 +136,7 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
         batchUpdateGenre(film);
         batchUpdateDirectors(film);// обновление режиссера
-        return film;
+        return findById(film.getId()).orElse(film);
     }
 
     @Override
