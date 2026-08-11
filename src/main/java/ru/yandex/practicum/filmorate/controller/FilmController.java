@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;  // ← ДОБАВИТЬ ЭТОТ ИМПОРТ
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,25 +27,28 @@ public class FilmController {
         filmService.delete(filmId);
     }
 
-
     @GetMapping
     public Collection<Film> findAll() {
-
         return filmService.findAll();
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public Film create(@Valid @RequestBody Film film) {
+        log.info("Запрос на создание фильма: {}", film.getName());
         return filmService.create(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film film) {
+    public Film update(@Valid @RequestBody Film film) {
+        log.info("Запрос на обновление фильма с id: {}", film.getId());
         return filmService.update(film);
     }
 
     @GetMapping("/popular")
-    public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count, @RequestParam(required = false) Long genreId, @RequestParam(required = false) Integer year) {
+    public List<Film> getTopFilms(@RequestParam(defaultValue = "10") Integer count,
+                                  @RequestParam(required = false) Long genreId,
+                                  @RequestParam(required = false) Integer year) {
         return filmService.getTopFilms(count, genreId, year);
     }
 
@@ -69,7 +73,6 @@ public class FilmController {
         return filmService.getCommonFilms(userId, friendId);
     }
 
-    
     @GetMapping("/director/{directorId}")
     public List<Film> getFilmsByDirector(
             @PathVariable Long directorId,
@@ -85,4 +88,3 @@ public class FilmController {
         return filmService.searchFilms(query, by);
     }
 }
-

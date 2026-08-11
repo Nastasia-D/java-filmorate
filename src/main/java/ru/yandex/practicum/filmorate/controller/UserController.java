@@ -40,12 +40,14 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@Valid @RequestBody User user) {
         log.info("Получен запрос на создание пользователя: {}", user.getLogin());
+        setDefaultNameIfEmpty(user);
         return userService.create(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         log.info("Запрос на обновление пользователя с id: {}", user.getId());
+        setDefaultNameIfEmpty(user);
         return userService.update(user);
     }
 
@@ -90,5 +92,13 @@ public class UserController {
     public List<Film> getRecommendations(@PathVariable Long id) {
         log.info("Запрос на получение рекомендаций для пользователя с id: {}", id);
         return userService.getRecommendations(id);
+    }
+
+    private void setDefaultNameIfEmpty(User user) {
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            log.debug("Имя пользователя не указано, устанавливаем имя равным логину: {}", user.getLogin());
+            user.setName(user.getLogin());
+        }
+        log.debug("Пользователь с логином '{}' прошел валидацию", user.getLogin());
     }
 }
